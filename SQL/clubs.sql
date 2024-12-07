@@ -16,5 +16,9 @@ CREATE TABLE clubs (
     vestuarios BOOLEAN                           -- Vestuarios disponibles (TRUE o FALSE)
 );
 
+ALTER TABLE clubs MODIFY COLUMN estacionamiento INT;
+ALTER TABLE clubs MODIFY COLUMN vestuarios INT;
 -- Verificar que los datos se hayan guardado correctamente
 SELECT * FROM clubs;
+use CanchaLibre;
+describe clubs;

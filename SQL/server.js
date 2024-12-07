@@ -19,7 +19,7 @@ app.get('/clubs', (req, res) => {
 
     if (usuario && usuario.trim() === '') {
         // Si `usuario` está presente pero vacío
-        return res.status(400).json({ message: 'Usuario no ' });
+        return res.status(400).json({ message: 'Usuario no proporcionado' });
     }
 
     const query = usuario
@@ -36,33 +36,67 @@ app.get('/clubs', (req, res) => {
     });
 });
 
+// Ruta POST para agregar un nuevo club
+app.post('/clubs', (req, res) => {
+    const { usuario, nombre, direccion, telefono, cantidad_canchas, estacionamiento, vestuarios } = req.body;
 
-// Ruta POST para crear un nuevo club
-app.post('/clubs', async (req, res) => {
-    const { usuario, nombre, direccion, telefono, cantidadCanchas, estacionamiento, vestuarios } = req.body;
-
-    // Verificar que todos los campos estén presentes
-    if (!usuario || !nombre || !direccion || !telefono || !cantidadCanchas) {
+    // Verificar que todos los datos estén presentes
+    if (!usuario || !nombre || !direccion || !telefono || cantidad_canchas === undefined) {
         return res.status(400).json({ message: 'Faltan datos en la solicitud' });
     }
 
-    try {
-        pool.execute(
-            'INSERT INTO clubs (usuario, nombre, direccion, telefono, cantidad_canchas, estacionamiento, vestuarios) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [usuario, nombre, direccion, telefono, cantidadCanchas, estacionamiento, vestuarios],
-            (err, result) => {
-                if (err) {
-                    return res.status(500).json({ message: 'Error al crear el club', error: err });
-                }
-                res.status(201).json({ message: 'Club creado correctamente', clubId: result.insertId });
-            }
-        );
-    } catch (error) {
-        res.status(500).json({ message: 'Error al crear el club', error });
-    }
+    const query = `
+    INSERT INTO clubs (usuario, nombre, direccion, telefono, cantidad_canchas, estacionamiento, vestuarios)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+    const params = [usuario, nombre, direccion, telefono, cantidad_canchas, estacionamiento, vestuarios];
+
+    pool.execute(query, params, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error al agregar el club', error: err });
+        }
+        res.status(201).json({ message: 'Club agregado correctamente', id: result.insertId });
+    });
 });
 
+
+// Ruta PUT para actualizar un club por usuario
+app.put('/clubs/:usuario', (req, res) => {
+    const { usuario } = req.params;
+    const { nombre, direccion, telefono, cantidad_canchas, estacionamiento, vestuarios } = req.body;
+
+    // Verificar que los datos estén presentes
+    if (!nombre || !direccion || !telefono || cantidad_canchas === null || cantidad_canchas === undefined) {
+        return res.status(400).json({ message: 'Faltan datos en la solicitud' });
+    }
+
+    console.log('Datos recibidos:', req.body); // Para depuración
+
+    // Actualizar los datos del club en la base de datos
+    const query = `
+    UPDATE clubs SET
+      nombre = ?, direccion = ?, telefono = ?, cantidad_canchas = ?, estacionamiento = ?, vestuarios = ?
+    WHERE usuario = ?
+  `;
+    const params = [nombre, direccion, telefono, cantidad_canchas, estacionamiento, vestuarios, usuario];
+
+    pool.execute(query, params, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error al actualizar el club', error: err });
+        }
+
+        // Verificar si se actualizó algún registro
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: 'Club actualizado correctamente' });
+        } else {
+            res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+    });
+});
+
+
+
 // Iniciar el servidor
-app.listen(port, () => {
-    console.log(`Servidor escuchando en http://localhost:${port}`);
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Servidor escuchando en http://0.0.0.0:${port}`);
 });
