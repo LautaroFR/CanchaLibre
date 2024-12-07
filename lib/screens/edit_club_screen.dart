@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../database_helper.dart';
 
 class EditClubScreen extends StatefulWidget {
   const EditClubScreen({super.key});
@@ -15,6 +16,23 @@ class _EditClubScreenState extends State<EditClubScreen> {
   int cantidadCanchas = 0;
   bool estacionamiento = false;
   bool vestuarios = false;
+
+  Future<void> guardarClub() async {
+    final dbHelper = DatabaseHelper();
+    final club = {
+      'nombre': nombre,
+      'direccion': direccion,
+      'telefono': telefono,
+      'cantidad_canchas': cantidadCanchas,
+      'estacionamiento': estacionamiento ? 1 : 0,
+      'vestuarios': vestuarios ? 1 : 0,
+    };
+    await dbHelper.insertClub(club);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Información guardada')),
+    );
+    Navigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,10 +79,7 @@ class _EditClubScreenState extends State<EditClubScreen> {
               ElevatedButton(
                 onPressed: () {
                   _formKey.currentState?.save();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Información guardada')),
-                  );
-                  Navigator.pop(context);
+                  guardarClub();
                 },
                 child: const Text('Guardar'),
               ),
