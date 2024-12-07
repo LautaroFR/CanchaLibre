@@ -22,3 +22,20 @@ ALTER TABLE clubs MODIFY COLUMN vestuarios INT;
 SELECT * FROM clubs;
 use CanchaLibre;
 describe clubs;
+
+-- Crear tabla para las canchas
+CREATE TABLE canchas (
+    id INT AUTO_INCREMENT PRIMARY KEY,          -- ID único de la cancha
+    club_id INT NOT NULL,                       -- ID del club al que pertenece
+    numero INT NOT NULL,                        -- Número de la cancha
+    tamano INT NOT NULL,                        -- Tamaño de la cancha
+    superficie ENUM('Sintético', 'Natural', 'Cemento', 'Parquet', 'Otro') NOT NULL, -- Tipo de superficie
+    luz BOOLEAN,                                -- Si tiene luz
+    techada BOOLEAN,                            -- Si está techada
+    precio INT NOT NULL,                        -- Precio por hora de la cancha
+    FOREIGN KEY (club_id) REFERENCES clubs(id)  -- Relación con la tabla de clubes
+);
+ALTER TABLE canchas MODIFY COLUMN techada INT;
+ALTER TABLE canchas MODIFY COLUMN luz INT;
+-- Verificar que la tabla se creó correctamente
+DESCRIBE canchas;

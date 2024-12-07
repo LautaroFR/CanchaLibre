@@ -94,6 +94,64 @@ app.put('/clubs/:usuario', (req, res) => {
     });
 });
 
+// Ruta POST para agregar una cancha
+app.post('/canchas', (req, res) => {
+    const { club_id, numero, tamano, superficie, luz, techada, precio } = req.body;
+
+    if (!club_id || !numero || !tamano || !superficie || precio === undefined) {
+        return res.status(400).json({ message: 'Faltan datos en la solicitud' });
+    }
+
+    const query = `
+        INSERT INTO canchas (club_id, numero, tamano, superficie, luz, techada, precio)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    const params = [club_id, numero, tamano, superficie, luz, techada, precio];
+
+    pool.execute(query, params, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error al agregar la cancha', error: err });
+        }
+        res.status(201).json({ message: 'Cancha agregada correctamente', id: result.insertId });
+    });
+});
+// Ruta GET para obtener las canchas de un club
+app.get('/canchas/:club_id', (req, res) => {
+    const { club_id } = req.params;
+
+    const query = 'SELECT * FROM canchas WHERE club_id = ?';
+
+    pool.execute(query, [club_id], (err, rows) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error al obtener las canchas', error: err });
+        }
+        res.json(rows); // Devuelve todas las canchas del club
+    });
+});
+// Ruta PUT para actualizar una cancha
+app.put('/canchas/:id', (req, res) => {
+    const { id } = req.params;
+    const { numero, tamano, superficie, luz, techada, precio } = req.body;
+
+    const query = `
+        UPDATE canchas SET
+            numero = ?, tamano = ?, superficie = ?, luz = ?, techada = ?, precio = ?
+        WHERE id = ?
+    `;
+    const params = [numero, tamano, superficie, luz, techada, precio, id];
+
+    pool.execute(query, params, (err, result) => {
+        if (err) {
+            return res.status(500).json({ message: 'Error al actualizar la cancha', error: err });
+        }
+
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: 'Cancha actualizada correctamente' });
+        } else {
+            res.status(404).json({ message: 'Cancha no encontrada' });
+        }
+    });
+});
 
 
 // Iniciar el servidor

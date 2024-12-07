@@ -5,7 +5,7 @@ class ApiService {
   final String baseUrl = "http://192.168.0.60:3001"; // Asegúrate de que esta IP sea accesible desde tu dispositivo
 
   /// Obtiene los datos del club por usuario.
-  Future<Map<String, dynamic>?> getClubByUsuario(String usuario) async {
+  Future<Map<String, dynamic>?> getClubByUser(String usuario) async {
     final response = await http.get(Uri.parse("$baseUrl/clubs?usuario=$usuario"));
 
     if (response.statusCode == 200) {
@@ -24,7 +24,7 @@ class ApiService {
   }
 
   /// Actualiza los datos del club para un usuario específico.
-  Future<void> updateClubByUsuario(String usuario, Map<String, dynamic> club) async {
+  Future<void> updateClubByUser(String usuario, Map<String, dynamic> club) async {
     if (usuario.isEmpty) {
       throw Exception("Usuario vacío");
     }
@@ -53,4 +53,50 @@ class ApiService {
       throw Exception("Error al obtener la lista de clubes");
     }
   }
-}
+
+  // class ApiService {
+  // final String baseUrl = "http://192.168.0.60:3001";
+
+  // Obtener canchas por ID de club
+  Future<List<Map<String, dynamic>>> getCourtsByClubId(int clubId) async {
+  final response = await http.get(Uri.parse("$baseUrl/canchas/$clubId"));
+
+  if (response.statusCode == 200) {
+  final List<dynamic> data = json.decode(response.body);
+  return data.cast<Map<String, dynamic>>();
+  } else {
+  throw Exception("Error al obtener las canchas: ${response.body}");
+  }
+  }
+
+  // Agregar una nueva cancha
+  Future<void> addCourt(int clubId, Map<String, dynamic> cancha) async {
+    // Agregar el clubId al mapa de la cancha antes de enviarlo
+    cancha['club_id'] = clubId;
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/canchas"),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(cancha),
+    );
+
+    if (response.statusCode != 201) {
+      throw Exception("Error al agregar la cancha: ${response.body}");
+    }
+  }
+
+  // Actualizar una cancha
+  Future<void> updateCourt(int canchaId, Map<String, dynamic> cancha) async {
+  final response = await http.put(
+  Uri.parse("$baseUrl/canchas/$canchaId"),
+  headers: {'Content-Type': 'application/json'},
+  body: json.encode(cancha),
+  );
+
+  if (response.statusCode != 200) {
+  throw Exception("Error al actualizar la cancha: ${response.body}");
+  }
+  }
+  }
+
+
