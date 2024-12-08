@@ -43,9 +43,9 @@ class _ClubScreenState extends State<ClubScreen> {
   Future<void> guardarCambios() async {
     final apiService = ApiService();
     try {
-      // Cambia la conversión a int a booleano
-      _club!['estacionamiento'] = _club!['estacionamiento'] == 1;  // Convertir de int a bool
-      _club!['vestuarios'] = _club!['vestuarios'] == 1;  // Convertir de int a bool
+      // Convertir los valores de estacionamiento y vestuarios a booleanos
+      _club!['estacionamiento'] = _club!['estacionamiento'] == 1;
+      _club!['vestuarios'] = _club!['vestuarios'] == 1;
 
       // Enviar la solicitud PUT al servidor
       await apiService.updateClubByUser(_usuarioController.text, _club!);
@@ -78,18 +78,49 @@ class _ClubScreenState extends State<ClubScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Club')),
       body: _usuarioValido && _club != null
-          ? SingleChildScrollView(
+          ? SingleChildScrollView( // Uso de SingleChildScrollView para evitar el desbordamiento
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Text('Usuario: ${_usuarioController.text}', style: const TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
+
+            // Campos para modificar los datos del club
             TextFormField(
               initialValue: _club!['nombre'],
               decoration: const InputDecoration(labelText: 'Nombre del Club'),
               onChanged: (value) => _club!['nombre'] = value,
             ),
-            // Otros campos del club...
+            const SizedBox(height: 10),
+            TextFormField(
+              initialValue: _club!['direccion'],
+              decoration: const InputDecoration(labelText: 'Dirección'),
+              onChanged: (value) => _club!['direccion'] = value,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              initialValue: _club!['telefono'],
+              decoration: const InputDecoration(labelText: 'Teléfono'),
+              onChanged: (value) => _club!['telefono'] = value,
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              initialValue: _club!['cantidad_canchas'].toString(),
+              decoration: const InputDecoration(labelText: 'Cantidad de Canchas'),
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _club!['cantidad_canchas'] = int.tryParse(value) ?? 0,
+            ),
+            const SizedBox(height: 10),
+            SwitchListTile(
+              title: const Text('Estacionamiento'),
+              value: _club!['estacionamiento'] == 1,
+              onChanged: (value) => setState(() => _club!['estacionamiento'] = value ? 1 : 0),
+            ),
+            SwitchListTile(
+              title: const Text('Vestuarios'),
+              value: _club!['vestuarios'] == 1,
+              onChanged: (value) => setState(() => _club!['vestuarios'] = value ? 1 : 0),
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: guardarCambios,
