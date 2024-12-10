@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "879333100538",
+    "project_id": "canchalibre-b671a",
+    "storage_bucket": "canchalibre-b671a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879333100538:android:36ab573e32dfed6a257243",
+        "android_client_info": {
+          "package_name": "com.cancha.libre"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPpVO9jIv1GIOV_SVFbYZyYKbEuM9gH7o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

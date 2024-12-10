@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart';
+import '../services/database_service.dart';
 
 class AddCourtScreen extends StatefulWidget {
-  final int clubId;
+  final String clubId;
 
-  AddCourtScreen({required this.clubId});
+  const AddCourtScreen({required this.clubId});
 
   @override
   _AddCourtScreenState createState() => _AddCourtScreenState();
@@ -12,19 +12,19 @@ class AddCourtScreen extends StatefulWidget {
 
 class _AddCourtScreenState extends State<AddCourtScreen> {
   final _formKey = GlobalKey<FormState>();
-  Map<String, dynamic> _cancha = {
-    'numero': null,
-    'tamano': null,
-    'superficie': 'Sintetico',
-    'luz': false,
-    'techada': false,
-    'precio': null,
+  final Map<String, dynamic> _court = {
+    'number': null,
+    'size': null,
+    'surface': 'Synthetic',
+    'light': false,
+    'covered': false,
+    'price': null,
   };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Agregar Cancha')),
+      appBar: AppBar(title: Text('Add Court')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -32,59 +32,58 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
           child: Column(
             children: [
               TextFormField(
-                decoration: InputDecoration(labelText: 'Número de Cancha'),
+                decoration: InputDecoration(labelText: 'Court Number'),
                 keyboardType: TextInputType.number,
-                onSaved: (value) => _cancha['numero'] = int.tryParse(value!),
-                validator: (value) => value!.isEmpty ? 'Campo obligatorio' : null,
+                onSaved: (value) => _court['number'] = int.tryParse(value!),
+                validator: (value) => value!.isEmpty ? 'Required field' : null,
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Tamaño: Futbol 5 - Futbol 7'),
+                decoration: InputDecoration(labelText: 'Size'),
                 keyboardType: TextInputType.number,
-                onSaved: (value) => _cancha['tamano'] = int.tryParse(value!),
-                validator: (value) => value!.isEmpty ? 'Campo obligatorio' : null,
+                onSaved: (value) => _court['size'] = int.tryParse(value!),
+                validator: (value) => value!.isEmpty ? 'Required field' : null,
               ),
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Superficie'),
-                value: _cancha['superficie'],
-                items: ['Sintetico', 'Natural', 'Cemento', 'Parquet', 'Otro']
+                decoration: InputDecoration(labelText: 'Surface'),
+                value: _court['surface'],
+                items: ['Synthetic', 'Natural', 'Concrete', 'Parquet', 'Other']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (value) => setState(() {
-                  _cancha['superficie'] = value!;
+                  _court['surface'] = value!;
                 }),
               ),
               SwitchListTile(
-                title: Text('Luz'),
-                value: _cancha['luz'],
+                title: Text('Light'),
+                value: _court['light'],
                 onChanged: (value) => setState(() {
-                  _cancha['luz'] = value;
+                  _court['light'] = value;
                 }),
               ),
               SwitchListTile(
-                title: Text('Techada'),
-                value: _cancha['techada'],
+                title: Text('Covered'),
+                value: _court['covered'],
                 onChanged: (value) => setState(() {
-                  _cancha['techada'] = value;
+                  _court['covered'] = value;
                 }),
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Precio'),
+                decoration: InputDecoration(labelText: 'Price'),
                 keyboardType: TextInputType.number,
-                onSaved: (value) => _cancha['precio'] = int.tryParse(value!),
-                validator: (value) => value!.isEmpty ? 'Campo obligatorio' : null,
+                onSaved: (value) => _court['price'] = int.tryParse(value!),
+                validator: (value) => value!.isEmpty ? 'Required field' : null,
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    final apiService = ApiService();
-                    // Aquí se agrega el clubId al mapa de cancha
-                    await apiService.addCourt(widget.clubId, _cancha); // Ya no es necesario modificar nada en esta línea
+                    final dbService = DatabaseService();
+                    await dbService.addCourt(widget.clubId, _court);  // Agregar cancha al club específico
                     Navigator.pop(context);
                   }
                 },
-                child: Text('Agregar Cancha'),
+                child: Text('Add Court'),
               ),
             ],
           ),

@@ -1,60 +1,88 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart';
+import '../services/database_service.dart';
 import 'court_list_screen.dart';
 import 'add_court_screen.dart';
 
 class ClubScreen extends StatefulWidget {
-  const ClubScreen({super.key});
+  final String userId;
+
+  const ClubScreen({super.key, required this.userId});
 
   @override
   _ClubScreenState createState() => _ClubScreenState();
 }
 
 class _ClubScreenState extends State<ClubScreen> {
-  final TextEditingController _usuarioController = TextEditingController();
-  bool _usuarioValido = false;
-  Map<String, dynamic>? _club; // Almacena los datos del club
-  String? _mensajeError;
+  Map<String, dynamic>? _club;
+  String? _errorMessage;
 
-  // Método para validar el usuario
-  Future<void> validarUsuario() async {
-    final apiService = ApiService();
+  Future<void> fetchClubData() async {
+    final databaseService = DatabaseService();
     try {
-      final club = await apiService.getClubByUser(_usuarioController.text);
+      final clubDoc = await databaseService.getClubByUser(widget.userId);
 
-      if (club != null) {
+      if (clubDoc != null) {
         setState(() {
-          _usuarioValido = true;
-          _club = club;
+          _club = clubDoc.data() as Map<String, dynamic>;
+          // Asegura que el campo 'id' esté presente y sea una cadena
+          _club!['id'] = clubDoc.id;
+
+          // Asegurar valores predeterminados
+          _club!['name'] ??= '';
+          _club!['address'] ??= '';
+          _club!['phone'] ??= 0;
+          _club!['court_count'] ??= 0;
+          _club!['parking'] ??= false;
+          _club!['changing_rooms'] ??= false;
+
+          // Convertir `phone` a cadena para el formulario
+          if (_club!['phone'] is int) {
+            _club!['phone'] = _club!['phone'].toString();
+          }
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Usuario no encontrado')),
-        );
+        setState(() {
+          _errorMessage = 'User not found';
+        });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al validar el usuario: $e')),
-      );
+      setState(() {
+        _errorMessage = 'Error fetching club data: $e';
+      });
     }
   }
 
-  // Método para guardar los cambios en la base de datos
-  Future<void> guardarCambios() async {
-    final apiService = ApiService();
+  Future<void> saveChanges() async {
+    final databaseService = DatabaseService();
     try {
-      // Convertir los valores de estacionamiento y vestuarios a booleanos
-      _club!['estacionamiento'] = _club!['estacionamiento'] == 1;
-      _club!['vestuarios'] = _club!['vestuarios'] == 1;
+      // Validar y preparar los datos antes de guardar
+      _club!['name'] = (_club!['name'] ?? '').toString().trim();
+      _club!['address'] = (_club!['address'] ?? '').toString().trim();
 
-      // Enviar la solicitud PUT al servidor
-      await apiService.updateClubByUser(_usuarioController.text, _club!);
+      // Validar que el teléfono sea un entero
+      _club!['phone'] = int.tryParse((_club!['phone'] ?? '0').toString()) ?? 0;
+
+      // Validar que el número de canchas sea un entero
+      _club!['court_count'] = int.tryParse((_club!['court_count'] ?? '0').toString()) ?? 0;
+
+      // Asegurarse de que los valores booleanos sean true o false
+      _club!['parking'] = _club!['parking'] ?? false;
+      _club!['changing_rooms'] = _club!['changing_rooms'] ?? false;
+
+      // Imprimir todos los valores antes de guardar para depurar
+      print('Datos a guardar: $_club');
+
+      // Enviar los datos validados a la base de datos
+      await databaseService.updateClub(_club!['id'], _club!);
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Datos actualizados correctamente')),
+        const SnackBar(content: Text('Data updated successfully')),
       );
     } catch (e) {
+      // Imprimir el error para depurar
+      print('Error al guardar datos: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar los datos: $e')),
+        SnackBar(content: Text('Error saving data: $e')),
       );
     }
   }
@@ -62,73 +90,60 @@ class _ClubScreenState extends State<ClubScreen> {
   @override
   void initState() {
     super.initState();
-    _usuarioController.addListener(() {
-      setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _usuarioController.dispose();
-    super.dispose();
+    fetchClubData();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Club')),
-      body: _usuarioValido && _club != null
-          ? SingleChildScrollView( // Uso de SingleChildScrollView para evitar el desbordamiento
+      appBar: AppBar(title: const Text('Portal del Club')),
+      body: _club != null
+          ? SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text('Usuario: ${_usuarioController.text}', style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 20),
-
-            // Campos para modificar los datos del club
             TextFormField(
-              initialValue: _club!['nombre'],
-              decoration: const InputDecoration(labelText: 'Nombre del Club'),
-              onChanged: (value) => _club!['nombre'] = value,
+              initialValue: _club!['name'],
+              decoration: const InputDecoration(labelText: 'Club'),
+              onChanged: (value) => _club!['name'] = value,
             ),
             const SizedBox(height: 10),
             TextFormField(
-              initialValue: _club!['direccion'],
+              initialValue: _club!['address'],
               decoration: const InputDecoration(labelText: 'Dirección'),
-              onChanged: (value) => _club!['direccion'] = value,
+              onChanged: (value) => _club!['address'] = value,
             ),
             const SizedBox(height: 10),
             TextFormField(
-              initialValue: _club!['telefono'],
+              initialValue: _club!['phone'].toString(),
               decoration: const InputDecoration(labelText: 'Teléfono'),
-              onChanged: (value) => _club!['telefono'] = value,
+              keyboardType: TextInputType.number,
+              onChanged: (value) => _club!['phone'] = int.tryParse(value) ?? 0,
             ),
             const SizedBox(height: 10),
             TextFormField(
-              initialValue: _club!['cantidad_canchas'].toString(),
-              decoration: const InputDecoration(labelText: 'Cantidad de Canchas'),
+              initialValue: _club!['court_count'].toString(),
+              decoration: const InputDecoration(labelText: 'Cantidad de canchas'),
               keyboardType: TextInputType.number,
-              onChanged: (value) => _club!['cantidad_canchas'] = int.tryParse(value) ?? 0,
+              onChanged: (value) => _club!['court_count'] = int.tryParse(value) ?? 0,
             ),
             const SizedBox(height: 10),
             SwitchListTile(
               title: const Text('Estacionamiento'),
-              value: _club!['estacionamiento'] == 1,
-              onChanged: (value) => setState(() => _club!['estacionamiento'] = value ? 1 : 0),
+              value: _club!['parking'],
+              onChanged: (value) => setState(() => _club!['parking'] = value),
             ),
             SwitchListTile(
               title: const Text('Vestuarios'),
-              value: _club!['vestuarios'] == 1,
-              onChanged: (value) => setState(() => _club!['vestuarios'] = value ? 1 : 0),
+              value: _club!['changing_rooms'],
+              onChanged: (value) => setState(() => _club!['changing_rooms'] = value),
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: guardarCambios,
+              onPressed: saveChanges,
               child: const Text('Guardar cambios'),
             ),
             const Divider(height: 40),
-
-            // Botones adicionales para navegar a otras pantallas
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -138,7 +153,7 @@ class _ClubScreenState extends State<ClubScreen> {
                   ),
                 );
               },
-              child: const Text('Ver lista de canchas'),
+              child: const Text('Ver listado de canchas'),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
@@ -150,36 +165,14 @@ class _ClubScreenState extends State<ClubScreen> {
                   ),
                 );
               },
-              child: const Text('Agregar canchas'),
+              child: const Text('Agregar cancha'),
             ),
           ],
         ),
       )
-          : Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _usuarioController,
-              decoration: const InputDecoration(labelText: 'Usuario'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _usuarioController.text.isEmpty ? null : validarUsuario,
-              child: const Text('Validar Usuario'),
-            ),
-            if (_mensajeError != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
-                child: Text(
-                  _mensajeError!,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ),
-          ],
-        ),
-      ),
+          : _errorMessage != null
+          ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

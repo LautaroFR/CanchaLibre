@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../database_helper.dart';
+import '../services/database_service.dart';
 
 class EditClubScreen extends StatefulWidget {
   const EditClubScreen({super.key});
@@ -10,26 +10,26 @@ class EditClubScreen extends StatefulWidget {
 
 class _EditClubScreenState extends State<EditClubScreen> {
   final _formKey = GlobalKey<FormState>();
-  String nombre = '';
-  String direccion = '';
-  String telefono = '';
-  int cantidadCanchas = 0;
-  bool estacionamiento = false;
-  bool vestuarios = false;
+  String name = '';
+  String address = '';
+  String phone = '';
+  int courtCount = 0;
+  bool parking = false;
+  bool changingRooms = false;
 
-  Future<void> guardarClub() async {
-    final dbHelper = DatabaseHelper();
+  Future<void> saveClub() async {
+    final databaseService = DatabaseService();
     final club = {
-      'nombre': nombre,
-      'direccion': direccion,
-      'telefono': telefono,
-      'cantidad_canchas': cantidadCanchas,
-      'estacionamiento': estacionamiento ? 1 : 0,
-      'vestuarios': vestuarios ? 1 : 0,
+      'name': name,
+      'address': address,
+      'phone': phone,
+      'court_count': courtCount,
+      'parking': parking,
+      'changing_rooms': changingRooms,
     };
-    await dbHelper.insertClub(club);
+    await databaseService.addClub(club);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Información guardada')),
+      const SnackBar(content: Text('Information saved')),
     );
     Navigator.pop(context);
   }
@@ -37,7 +37,7 @@ class _EditClubScreenState extends State<EditClubScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Editar información del Club')),
+      appBar: AppBar(title: const Text('Edit Club Information')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -45,43 +45,43 @@ class _EditClubScreenState extends State<EditClubScreen> {
           child: ListView(
             children: [
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Nombre'),
-                onSaved: (value) => nombre = value ?? '',
+                decoration: const InputDecoration(labelText: 'Name'),
+                onSaved: (value) => name = value ?? '',
               ),
               const SizedBox(height: 10),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Dirección'),
-                onSaved: (value) => direccion = value ?? '',
+                decoration: const InputDecoration(labelText: 'Address'),
+                onSaved: (value) => address = value ?? '',
               ),
               const SizedBox(height: 10),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Teléfono'),
-                onSaved: (value) => telefono = value ?? '',
+                decoration: const InputDecoration(labelText: 'Phone'),
+                onSaved: (value) => phone = value ?? '',
               ),
               const SizedBox(height: 10),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Cantidad de canchas'),
+                decoration: const InputDecoration(labelText: 'Court Count'),
                 keyboardType: TextInputType.number,
-                onSaved: (value) => cantidadCanchas = int.parse(value ?? '0'),
+                onSaved: (value) => courtCount = int.parse(value ?? '0'),
               ),
               const SizedBox(height: 10),
               CheckboxListTile(
-                title: const Text('Estacionamiento'),
-                value: estacionamiento,
-                onChanged: (value) => setState(() => estacionamiento = value ?? false),
+                title: const Text('Parking'),
+                value: parking,
+                onChanged: (value) => setState(() => parking = value ?? false),
               ),
               CheckboxListTile(
-                title: const Text('Vestuarios'),
-                value: vestuarios,
-                onChanged: (value) => setState(() => vestuarios = value ?? false),
+                title: const Text('Changing Rooms'),
+                value: changingRooms,
+                onChanged: (value) => setState(() => changingRooms = value ?? false),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   _formKey.currentState?.save();
-                  guardarClub();
+                  saveClub();
                 },
-                child: const Text('Guardar'),
+                child: const Text('Save'),
               ),
             ],
           ),

@@ -1,4 +1,4 @@
-package com.example.cancha_libre
+package com.cancha.libre
 
 import io.flutter.embedding.android.FlutterActivity
 

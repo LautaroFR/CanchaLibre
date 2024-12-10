@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/database_service.dart';
 
-class CourtListScreen extends StatelessWidget {
-  final String clubId;
+class AllCourtsScreen extends StatelessWidget {
+  const AllCourtsScreen({super.key});
 
-  const CourtListScreen({super.key, required this.clubId});
-
-  Future<List<Map<String, dynamic>>> fetchCourts() async {
+  Future<List<Map<String, dynamic>>> fetchAllCourts() async {
     final databaseService = DatabaseService();
     try {
-      final QuerySnapshot<Map<String, dynamic>> snapshot = await databaseService.getCourtsByClubId(clubId);
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      final List<Map<String, dynamic>> courts = await databaseService.getAllCourts();
+      return courts;
     } catch (error) {
-      print("Error fetching courts: $error");
+      print("Error fetching all courts: $error");
       return [];
     }
   }
@@ -21,9 +19,9 @@ class CourtListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Court List')),
+      appBar: AppBar(title: const Text('All Courts')),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: fetchCourts(),
+        future: fetchAllCourts(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -37,7 +35,7 @@ class CourtListScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final court = snapshot.data![index];
                 return ListTile(
-                  title: Text('Court Number: ${court['number']}'),
+                  title: Text('Court Number: ${court['number']} (Club ID: ${court['clubId']})'),
                   subtitle: Text('Size: ${court['size']} m²\nSurface: ${court['surface']}\nPrice: \$${court['price']}'),
                   trailing: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,

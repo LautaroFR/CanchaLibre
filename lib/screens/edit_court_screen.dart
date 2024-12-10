@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'api_service.dart';
+import '../services/database_service.dart';
 
 class EditCourtScreen extends StatefulWidget {
-  final Map<String, dynamic> cancha;
+  final String courtId;
+  final String clubId;  // Añadido clubId
+  final Map<String, dynamic> court;
 
-  EditCourtScreen({required this.cancha});
+  EditCourtScreen({required this.courtId, required this.clubId, required this.court});  // Añadido clubId
 
   @override
   _EditCourtScreenState createState() => _EditCourtScreenState();
@@ -12,18 +14,18 @@ class EditCourtScreen extends StatefulWidget {
 
 class _EditCourtScreenState extends State<EditCourtScreen> {
   final _formKey = GlobalKey<FormState>();
-  late Map<String, dynamic> _cancha;
+  late Map<String, dynamic> _court;
 
   @override
   void initState() {
     super.initState();
-    _cancha = Map<String, dynamic>.from(widget.cancha);
+    _court = Map<String, dynamic>.from(widget.court);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Editar Cancha')),
+      appBar: AppBar(title: Text('Edit Court')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -31,58 +33,58 @@ class _EditCourtScreenState extends State<EditCourtScreen> {
           child: Column(
             children: [
               TextFormField(
-                initialValue: _cancha['numero'].toString(),
-                decoration: InputDecoration(labelText: 'Número de Cancha'),
+                initialValue: _court['number'].toString(),
+                decoration: InputDecoration(labelText: 'Court Number'),
                 keyboardType: TextInputType.number,
-                onSaved: (value) => _cancha['numero'] = int.tryParse(value!),
+                onSaved: (value) => _court['number'] = int.tryParse(value!),
               ),
               TextFormField(
-                initialValue: _cancha['tamano'].toString(),
-                decoration: InputDecoration(labelText: 'Tamaño'),
+                initialValue: _court['size'].toString(),
+                decoration: InputDecoration(labelText: 'Size'),
                 keyboardType: TextInputType.number,
-                onSaved: (value) => _cancha['tamano'] = int.tryParse(value!),
+                onSaved: (value) => _court['size'] = int.tryParse(value!),
               ),
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Superficie'),
-                value: _cancha['superficie'],
-                items: ['Sintetico', 'Natural', 'Cemento', 'Parquet', 'Otro']
+                decoration: InputDecoration(labelText: 'Surface'),
+                value: _court['surface'],
+                items: ['Synthetic', 'Natural', 'Concrete', 'Parquet', 'Other']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (value) => setState(() {
-                  _cancha['superficie'] = value!;
+                  _court['surface'] = value!;
                 }),
               ),
               SwitchListTile(
-                title: Text('Luz'),
-                value: _cancha['luz'],
+                title: Text('Light'),
+                value: _court['light'],
                 onChanged: (value) => setState(() {
-                  _cancha['luz'] = value;
+                  _court['light'] = value;
                 }),
               ),
               SwitchListTile(
-                title: Text('Techada'),
-                value: _cancha['techada'],
+                title: Text('Covered'),
+                value: _court['covered'],
                 onChanged: (value) => setState(() {
-                  _cancha['techada'] = value;
+                  _court['covered'] = value;
                 }),
               ),
               TextFormField(
-                initialValue: _cancha['precio'].toString(),
-                decoration: InputDecoration(labelText: 'Precio'),
+                initialValue: _court['price'].toString(),
+                decoration: InputDecoration(labelText: 'Price'),
                 keyboardType: TextInputType.number,
-                onSaved: (value) => _cancha['precio'] = int.tryParse(value!),
+                onSaved: (value) => _court['price'] = int.tryParse(value!),
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    final apiService = ApiService();
-                    await apiService.updateCourt(_cancha['id'], _cancha);
+                    final databaseService = DatabaseService();
+                    await databaseService.updateCourt(widget.courtId, widget.clubId, _court);  // Añade clubId aquí
                     Navigator.pop(context);
                   }
                 },
-                child: Text('Guardar Cambios'),
+                child: Text('Save Changes'),
               ),
             ],
           ),
