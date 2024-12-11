@@ -8,7 +8,7 @@ class SearchCourtScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Buscar Cancha')),
       body: Center(
-        child: const Text('Función de búsqueda de cancha no implementada'),
+        child: const Text('Pantalla de búsqueda de cancha'),
       ),
     );
   }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login_page.dart';  // Importa la pantalla de inicio de sesión
-import 'search_court_screen.dart';  // Importa la pantalla de búsqueda de cancha (placeholder)
-import 'search_club_screen.dart';  // Importa la pantalla de búsqueda de club (placeholder)
+import 'search_court_screen.dart';  // Importa la pantalla de búsqueda de cancha
+import 'search_club_screen.dart';  // Importa la pantalla de búsqueda de club
 import 'all_courts_screen.dart';  // Importa la pantalla de todas las canchas
+import 'club_screen.dart';  // Importa la pantalla del club
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -26,11 +29,35 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),  // Navegar a la pantalla de inicio de sesión
-                );
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                bool keepLoggedIn = prefs.getBool('keepLoggedIn') ?? false;
+
+                if (keepLoggedIn) {
+                  User? user = FirebaseAuth.instance.currentUser;
+                  if (user != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ClubScreen(email: user.email!),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                  }
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginPage(),
+                    ),
+                  );
+                }
               },
               child: const Text('Club'),
             ),

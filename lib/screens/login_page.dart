@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';  // Importa shared_preferences
 import '../services/database_service.dart';
 import 'club_screen.dart';  // Importa la pantalla del club
 
@@ -17,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _obscureText = true;  // Inicialmente, la contraseña está oculta
+  bool _keepLoggedIn = false;  // Inicialmente, no mantener la sesión iniciada
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -31,7 +33,11 @@ class _LoginPageState extends State<LoginPage> {
         );
 
         if (userCredential.user != null) {
-          Navigator.pushReplacement(
+          if (_keepLoggedIn) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('keepLoggedIn', true);
+          }
+          Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ClubScreen(email: _emailController.text),  // Navegar a la pantalla del club con el email del usuario
@@ -43,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No se pudo iniciar sesión: $e')),
+          SnackBar(content: Text('Usuario o contraseña incorrecta.')),
         );
       }
     }
@@ -93,6 +99,15 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const Text('Mostrar contraseña'),
                 ],
+              ),
+              CheckboxListTile(
+                title: const Text('Mantener sesión iniciada'),
+                value: _keepLoggedIn,
+                onChanged: (bool? value) {
+                  setState(() {
+                    _keepLoggedIn = value ?? false;
+                  });
+                },
               ),
               const SizedBox(height: 20),
               _isLoading

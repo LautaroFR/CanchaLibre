@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/database_service.dart';
 import 'court_list_screen.dart';
 import 'add_court_screen.dart';
-import '../widgets/address_autocomplete.dart';  // Importa el widget de autocompletado
+import '../widgets/address_autocomplete.dart';
+import 'home_screen.dart';  // Importa la pantalla de inicio
 
 class ClubScreen extends StatefulWidget {
   final String email;
@@ -74,6 +77,19 @@ class _ClubScreenState extends State<ClubScreen> {
     }
   }
 
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('keepLoggedIn', false);  // Actualizar el estado de mantener sesión iniciada
+    await FirebaseAuth.instance.signOut();  // Cerrar sesión en Firebase
+
+    // Redirigir a HomeScreen
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -83,7 +99,15 @@ class _ClubScreenState extends State<ClubScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Portal del Club')),
+      appBar: AppBar(
+        title: const Text('Portal del Club'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
+      ),
       body: _club != null
           ? SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

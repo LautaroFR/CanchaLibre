@@ -8,7 +8,7 @@ class SearchClubScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Buscar Club')),
       body: Center(
-        child: const Text('Función de búsqueda de club no implementada'),
+        child: const Text('Pantalla de búsqueda de club'),
       ),
     );
   }
