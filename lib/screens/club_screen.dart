@@ -101,6 +101,16 @@ class _ClubScreenState extends State<ClubScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Portal del Club'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  (Route<dynamic> route) => false,
+            );
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
