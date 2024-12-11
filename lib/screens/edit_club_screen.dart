@@ -32,7 +32,7 @@ class _EditClubScreenState extends State<EditClubScreen> {
     };
     await databaseService.addOrUpdateClub(widget.email, club);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Information saved')),
+      const SnackBar(content: Text('Información guardada')),
     );
     Navigator.pop(context);
   }
@@ -40,7 +40,7 @@ class _EditClubScreenState extends State<EditClubScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Edit Club Information')),
+      appBar: AppBar(title: const Text('Editar información del club')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -48,33 +48,33 @@ class _EditClubScreenState extends State<EditClubScreen> {
           child: ListView(
             children: [
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Name'),
+                decoration: const InputDecoration(labelText: 'Nombre'),
                 onSaved: (value) => name = value ?? '',
               ),
               const SizedBox(height: 10),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Address'),
+                decoration: const InputDecoration(labelText: 'Dirección'),
                 onSaved: (value) => address = value ?? '',
               ),
               const SizedBox(height: 10),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Phone'),
+                decoration: const InputDecoration(labelText: 'Teléfono'),
                 onSaved: (value) => phone = value ?? '',
               ),
               const SizedBox(height: 10),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Court Count'),
+                decoration: const InputDecoration(labelText: 'Cantidad de canchas'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => courtCount = int.parse(value ?? '0'),
               ),
               const SizedBox(height: 10),
               CheckboxListTile(
-                title: const Text('Parking'),
+                title: const Text('Estacionamiento'),
                 value: parking,
                 onChanged: (value) => setState(() => parking = value ?? false),
               ),
               CheckboxListTile(
-                title: const Text('Changing Rooms'),
+                title: const Text('Vestuarios'),
                 value: changingRooms,
                 onChanged: (value) => setState(() => changingRooms = value ?? false),
               ),
@@ -84,7 +84,7 @@ class _EditClubScreenState extends State<EditClubScreen> {
                   _formKey.currentState?.save();
                   saveClub();
                 },
-                child: const Text('Save'),
+                child: const Text('Guardar'),
               ),
             ],
           ),

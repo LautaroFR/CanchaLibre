@@ -43,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to sign in: $e')),
+          SnackBar(content: Text('No se pudo iniciar sesión: $e')),
         );
       }
     }
@@ -65,18 +65,18 @@ class _LoginPageState extends State<LoginPage> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                    return 'Por favor ingrese su email';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Password'),
+                decoration: const InputDecoration(labelText: 'Contraseña'),
                 obscureText: _obscureText,  // Usar el estado para mostrar/ocultar la contraseña
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                    return 'Por favor ingrese su contraseña';
                   }
                   return null;
                 },
@@ -91,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
                       });
                     },
                   ),
-                  const Text('Show Password'),
+                  const Text('Mostrar contraseña'),
                 ],
               ),
               const SizedBox(height: 20),

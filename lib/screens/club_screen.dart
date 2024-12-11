@@ -61,12 +61,12 @@ class _ClubScreenState extends State<ClubScreen> {
       await databaseService.addOrUpdateClub(widget.email, _club!);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Data updated successfully')),
+        const SnackBar(content: Text('Información actualizada satisfactoriamente')),
       );
     } catch (e) {
       print('Error al guardar datos: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving data: $e')),
+        SnackBar(content: Text('Error al guardar datos: $e')),
       );
     }
   }

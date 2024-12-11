@@ -25,7 +25,7 @@ class _EditCourtScreenState extends State<EditCourtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Edit Court')),
+      appBar: AppBar(title: Text('Editar cancha')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -34,20 +34,20 @@ class _EditCourtScreenState extends State<EditCourtScreen> {
             children: [
               TextFormField(
                 initialValue: _court['number'].toString(),
-                decoration: InputDecoration(labelText: 'Court Number'),
+                decoration: InputDecoration(labelText: 'Cancha Nro'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['number'] = int.tryParse(value!),
               ),
               TextFormField(
                 initialValue: _court['size'].toString(),
-                decoration: InputDecoration(labelText: 'Size'),
+                decoration: InputDecoration(labelText: 'Tamaño: Futbol 5 / Futbol 7'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['size'] = int.tryParse(value!),
               ),
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Surface'),
+                decoration: InputDecoration(labelText: 'Superficie'),
                 value: _court['surface'],
-                items: ['Synthetic', 'Natural', 'Concrete', 'Parquet', 'Other']
+                items: ['Sintético', 'Natural', 'Cemento', 'Parquet', 'Otro']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (value) => setState(() {
@@ -55,14 +55,14 @@ class _EditCourtScreenState extends State<EditCourtScreen> {
                 }),
               ),
               SwitchListTile(
-                title: Text('Light'),
+                title: Text('Con iluminación'),
                 value: _court['light'],
                 onChanged: (value) => setState(() {
                   _court['light'] = value;
                 }),
               ),
               SwitchListTile(
-                title: Text('Covered'),
+                title: Text('Techada'),
                 value: _court['covered'],
                 onChanged: (value) => setState(() {
                   _court['covered'] = value;
@@ -70,7 +70,7 @@ class _EditCourtScreenState extends State<EditCourtScreen> {
               ),
               TextFormField(
                 initialValue: _court['price'].toString(),
-                decoration: InputDecoration(labelText: 'Price'),
+                decoration: InputDecoration(labelText: 'Precio'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['price'] = int.tryParse(value!),
               ),
@@ -84,7 +84,7 @@ class _EditCourtScreenState extends State<EditCourtScreen> {
                     Navigator.pop(context);
                   }
                 },
-                child: Text('Save Changes'),
+                child: Text('Guardar cambios'),
               ),
             ],
           ),

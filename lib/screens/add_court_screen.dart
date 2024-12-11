@@ -16,7 +16,7 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
   final Map<String, dynamic> _court = {
     'number': null,
     'size': null,
-    'surface': 'Synthetic',
+    'surface': 'Sintético',
     'light': false,
     'covered': false,
     'price': null,
@@ -50,7 +50,7 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.court == null ? 'Add Court' : 'Edit Court')),
+      appBar: AppBar(title: Text(widget.court == null ? 'Agregar cancha' : 'Editar cancha')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -59,22 +59,22 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
             children: [
               TextFormField(
                 initialValue: _court['number']?.toString(),
-                decoration: const InputDecoration(labelText: 'Court Number'),
+                decoration: const InputDecoration(labelText: 'Cancha Nro'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['number'] = int.tryParse(value!),
-                validator: (value) => value!.isEmpty ? 'Required field' : null,
+                validator: (value) => value!.isEmpty ? 'Campo obligatorio' : null,
               ),
               TextFormField(
                 initialValue: _court['size']?.toString(),
-                decoration: const InputDecoration(labelText: 'Size'),
+                decoration: const InputDecoration(labelText: 'Tamaño: Futbol 5 / Futbol 7'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['size'] = int.tryParse(value!),
-                validator: (value) => value!.isEmpty ? 'Required field' : null,
+                validator: (value) => value!.isEmpty ? 'Campo obligatorio' : null,
               ),
               DropdownButtonFormField<String>(
                 value: _court['surface'],
-                decoration: const InputDecoration(labelText: 'Surface'),
-                items: ['Synthetic', 'Natural', 'Concrete', 'Parquet', 'Other']
+                decoration: const InputDecoration(labelText: 'Superficie'),
+                items: ['Sintético', 'Natural', 'Cemento', 'Parquet', 'Otro']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
                 onChanged: (value) => setState(() {
@@ -82,14 +82,14 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
                 }),
               ),
               SwitchListTile(
-                title: const Text('Light'),
+                title: const Text('Con iluminación'),
                 value: _court['light'],
                 onChanged: (value) => setState(() {
                   _court['light'] = value;
                 }),
               ),
               SwitchListTile(
-                title: const Text('Covered'),
+                title: const Text('Techada'),
                 value: _court['covered'],
                 onChanged: (value) => setState(() {
                   _court['covered'] = value;
@@ -97,10 +97,10 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
               ),
               TextFormField(
                 initialValue: _court['price']?.toString(),
-                decoration: const InputDecoration(labelText: 'Price'),
+                decoration: const InputDecoration(labelText: 'Precio'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['price'] = int.tryParse(value!),
-                validator: (value) => value!.isEmpty ? 'Required field' : null,
+                validator: (value) => value!.isEmpty ? 'Campo obligatorio' : null,
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -110,7 +110,7 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
                     await saveCourt();
                   }
                 },
-                child: Text(widget.court == null ? 'Add Court' : 'Save Changes'),
+                child: Text(widget.court == null ? 'Añadir cancha' : 'Guardar cambios'),
               ),
             ],
           ),

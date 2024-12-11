@@ -41,7 +41,7 @@ class _CourtListScreenState extends State<CourtListScreen> {
     final databaseService = DatabaseService();
     await databaseService.deleteCourt(widget.clubId, courtId);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Court deleted successfully')),
+      const SnackBar(content: Text('Cancha eliminada satisfactoriamente')),
     );
     setState(() {
       _futureCourts = fetchCourts();
@@ -77,7 +77,7 @@ class _CourtListScreenState extends State<CourtListScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No courts found'));
+            return const Center(child: Text('No se encontraron canchas'));
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
@@ -100,21 +100,21 @@ class _CourtListScreenState extends State<CourtListScreen> {
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: const Text('Confirm Deletion'),
-                                content: const Text('Are you sure you want to delete this court?'),
+                                title: const Text('Confirmar eliminación'),
+                                content: const Text('Deseas borrar la cancha seleccionada?'),
                                 actions: <Widget>[
                                   TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
                                     },
-                                    child: const Text('Cancel'),
+                                    child: const Text('Cancelar'),
                                   ),
                                   TextButton(
                                     onPressed: () async {
                                       Navigator.of(context).pop();
                                       await deleteCourt(context, court['id']);
                                     },
-                                    child: const Text('Delete'),
+                                    child: const Text('Borrar'),
                                   ),
                                 ],
                               );

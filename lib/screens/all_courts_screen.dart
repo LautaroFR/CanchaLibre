@@ -28,7 +28,7 @@ class AllCourtsScreen extends StatelessWidget {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No courts found'));
+            return const Center(child: Text('No se encontraron canchas'));
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
