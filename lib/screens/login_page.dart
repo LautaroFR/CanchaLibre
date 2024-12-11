@@ -16,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _obscureText = true;  // Inicialmente, la contraseña está oculta
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
@@ -72,13 +73,26 @@ class _LoginPageState extends State<LoginPage> {
               TextFormField(
                 controller: _passwordController,
                 decoration: const InputDecoration(labelText: 'Password'),
-                obscureText: true,
+                obscureText: _obscureText,  // Usar el estado para mostrar/ocultar la contraseña
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
                   }
                   return null;
                 },
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    value: !_obscureText,
+                    onChanged: (value) {
+                      setState(() {
+                        _obscureText = !value!;
+                      });
+                    },
+                  ),
+                  const Text('Show Password'),
+                ],
               ),
               const SizedBox(height: 20),
               _isLoading

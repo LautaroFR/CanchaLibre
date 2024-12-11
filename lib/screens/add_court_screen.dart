@@ -3,8 +3,9 @@ import '../services/database_service.dart';
 
 class AddCourtScreen extends StatefulWidget {
   final String clubId;
+  final Map<String, dynamic>? court;
 
-  const AddCourtScreen({required this.clubId});
+  const AddCourtScreen({required this.clubId, this.court});
 
   @override
   _AddCourtScreenState createState() => _AddCourtScreenState();
@@ -22,9 +23,34 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
   };
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.court != null) {
+      _court['number'] = widget.court!['number'];
+      _court['size'] = widget.court!['size'];
+      _court['surface'] = widget.court!['surface'];
+      _court['light'] = widget.court!['light'];
+      _court['covered'] = widget.court!['covered'];
+      _court['price'] = widget.court!['price'];
+    }
+  }
+
+  Future<void> saveCourt() async {
+    final dbService = DatabaseService();
+    if (widget.court == null) {
+      // Add new court
+      await dbService.addCourt(widget.clubId, _court);
+    } else {
+      // Update existing court
+      await dbService.updateCourt(widget.court!['id'], widget.clubId, _court);
+    }
+    Navigator.pop(context, true); // Indicar que se hizo un cambio
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Court')),
+      appBar: AppBar(title: Text(widget.court == null ? 'Add Court' : 'Edit Court')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -32,20 +58,22 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
           child: Column(
             children: [
               TextFormField(
+                initialValue: _court['number']?.toString(),
                 decoration: const InputDecoration(labelText: 'Court Number'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['number'] = int.tryParse(value!),
                 validator: (value) => value!.isEmpty ? 'Required field' : null,
               ),
               TextFormField(
+                initialValue: _court['size']?.toString(),
                 decoration: const InputDecoration(labelText: 'Size'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['size'] = int.tryParse(value!),
                 validator: (value) => value!.isEmpty ? 'Required field' : null,
               ),
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Surface'),
                 value: _court['surface'],
+                decoration: const InputDecoration(labelText: 'Surface'),
                 items: ['Synthetic', 'Natural', 'Concrete', 'Parquet', 'Other']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
@@ -68,6 +96,7 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
                 }),
               ),
               TextFormField(
+                initialValue: _court['price']?.toString(),
                 decoration: const InputDecoration(labelText: 'Price'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['price'] = int.tryParse(value!),
@@ -78,12 +107,10 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
                     _formKey.currentState!.save();
-                    final dbService = DatabaseService();
-                    await dbService.addCourt(widget.clubId, _court);  // Agregar cancha al club específico
-                    Navigator.pop(context);
+                    await saveCourt();
                   }
                 },
-                child: const Text('Add Court'),
+                child: Text(widget.court == null ? 'Add Court' : 'Save Changes'),
               ),
             ],
           ),
