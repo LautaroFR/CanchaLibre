@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../services/auth_service.dart';
+import '../services/database_service.dart';
 import 'club_screen.dart';  // Importa la pantalla del club
 
 class LoginPage extends StatefulWidget {
@@ -32,7 +32,9 @@ class _LoginPageState extends State<LoginPage> {
         if (userCredential.user != null) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => ClubScreen(userId: userCredential.user!.uid)),  // Navegar a la pantalla del club con el ID del usuario
+            MaterialPageRoute(
+              builder: (context) => ClubScreen(email: _emailController.text),  // Navegar a la pantalla del club con el email del usuario
+            ),
           );
         }
       } catch (e) {
@@ -62,18 +64,18 @@ class _LoginPageState extends State<LoginPage> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese su email';
+                    return 'Please enter your email';
                   }
                   return null;
                 },
               ),
               TextFormField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Contraseña'),
+                decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Por favor ingrese su contraseña';
+                    return 'Please enter your password';
                   }
                   return null;
                 },
@@ -83,7 +85,7 @@ class _LoginPageState extends State<LoginPage> {
                   ? const CircularProgressIndicator()
                   : ElevatedButton(
                 onPressed: _login,
-                child: const Text('Ingresar'),
+                child: const Text('Login'),
               ),
             ],
           ),

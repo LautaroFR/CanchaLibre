@@ -3,43 +3,29 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class DatabaseService {
   final CollectionReference<Map<String, dynamic>> clubsCollection = FirebaseFirestore.instance.collection('clubs');
 
-  // Add a club
-  Future<void> addClub(Map<String, dynamic> clubData) async {
+  // Add or update a club with custom document ID
+  Future<void> addOrUpdateClub(String email, Map<String, dynamic> clubData) async {
     try {
-      // Asegúrate de que `phone` se guarde como entero
-      if (clubData['phone'] is String) {
-        clubData['phone'] = int.parse(clubData['phone']);
-      }
-      await clubsCollection.add(clubData);
+      String documentId = email.split('@')[0];  // Obtener la parte antes del @
+      await clubsCollection.doc(documentId).set(clubData, SetOptions(merge: true));  // Usar SetOptions para la actualización si el documento ya existe
     } catch (error) {
-      print("Error adding club: $error");
+      print("Error adding/updating club: $error");
+      rethrow;
     }
   }
 
-  // Update club information
-  Future<void> updateClub(String clubId, Map<String, dynamic> updatedData) async {
+  // Get club by email
+  Future<DocumentSnapshot<Map<String, dynamic>>?> getClubByEmail(String email) async {
     try {
-      // Asegúrate de que `phone` se guarde como entero
-      if (updatedData['phone'] is String) {
-        updatedData['phone'] = int.parse(updatedData['phone']);
-      }
-      await clubsCollection.doc(clubId).update(updatedData);
-    } catch (error) {
-      print("Error updating club: $error");
-    }
-  }
-
-  // Get club by user
-  Future<DocumentSnapshot<Map<String, dynamic>>?> getClubByUser(String userId) async {
-    try {
-      QuerySnapshot<Map<String, dynamic>> snapshot = await clubsCollection.where('userId', isEqualTo: userId).get();
-      if (snapshot.docs.isNotEmpty) {
-        return snapshot.docs.first;
+      String documentId = email.split('@')[0];  // Obtener la parte antes del @
+      DocumentSnapshot<Map<String, dynamic>> doc = await clubsCollection.doc(documentId).get();
+      if (doc.exists) {
+        return doc;
       } else {
         return null;
       }
     } catch (error) {
-      print("Error getting club by user: $error");
+      print("Error getting club by email: $error");
       return null;
     }
   }
@@ -50,6 +36,7 @@ class DatabaseService {
       await clubsCollection.doc(clubId).collection('courts').doc(courtId).delete();
     } catch (error) {
       print("Error deleting court: $error");
+      rethrow;
     }
   }
 
@@ -59,6 +46,7 @@ class DatabaseService {
       await clubsCollection.doc(clubId).collection('courts').add(courtData);
     } catch (error) {
       print("Error adding court: $error");
+      rethrow;
     }
   }
 
@@ -73,6 +61,7 @@ class DatabaseService {
       await clubsCollection.doc(clubId).collection('courts').doc(courtId).update(updatedData);
     } catch (error) {
       print("Error updating court: $error");
+      rethrow;
     }
   }
 

@@ -4,9 +4,9 @@ import 'court_list_screen.dart';
 import 'add_court_screen.dart';
 
 class ClubScreen extends StatefulWidget {
-  final String userId;
+  final String email;
 
-  const ClubScreen({super.key, required this.userId});
+  const ClubScreen({super.key, required this.email});
 
   @override
   _ClubScreenState createState() => _ClubScreenState();
@@ -19,30 +19,25 @@ class _ClubScreenState extends State<ClubScreen> {
   Future<void> fetchClubData() async {
     final databaseService = DatabaseService();
     try {
-      final clubDoc = await databaseService.getClubByUser(widget.userId);
+      final clubDoc = await databaseService.getClubByEmail(widget.email);
 
       if (clubDoc != null) {
         setState(() {
           _club = clubDoc.data() as Map<String, dynamic>;
-          // Asegura que el campo 'id' esté presente y sea una cadena
           _club!['id'] = clubDoc.id;
-
-          // Asegurar valores predeterminados
-          _club!['name'] ??= '';
-          _club!['address'] ??= '';
-          _club!['phone'] ??= 0;
-          _club!['court_count'] ??= 0;
-          _club!['parking'] ??= false;
-          _club!['changing_rooms'] ??= false;
-
-          // Convertir `phone` a cadena para el formulario
-          if (_club!['phone'] is int) {
-            _club!['phone'] = _club!['phone'].toString();
-          }
         });
       } else {
         setState(() {
-          _errorMessage = 'User not found';
+          _club = {
+            'name': '',
+            'address': '',
+            'phone': '',
+            'court_count': 0,
+            'parking': false,
+            'changing_rooms': false,
+            'email': widget.email,
+          };
+          _club!['id'] = widget.email.split('@')[0];  // Crear el 'id' basado en el email
         });
       }
     } catch (e) {
@@ -55,31 +50,20 @@ class _ClubScreenState extends State<ClubScreen> {
   Future<void> saveChanges() async {
     final databaseService = DatabaseService();
     try {
-      // Validar y preparar los datos antes de guardar
       _club!['name'] = (_club!['name'] ?? '').toString().trim();
       _club!['address'] = (_club!['address'] ?? '').toString().trim();
-
-      // Validar que el teléfono sea un entero
-      _club!['phone'] = int.tryParse((_club!['phone'] ?? '0').toString()) ?? 0;
-
-      // Validar que el número de canchas sea un entero
+      _club!['phone'] = _club!['phone'].toString().trim();
       _club!['court_count'] = int.tryParse((_club!['court_count'] ?? '0').toString()) ?? 0;
-
-      // Asegurarse de que los valores booleanos sean true o false
       _club!['parking'] = _club!['parking'] ?? false;
       _club!['changing_rooms'] = _club!['changing_rooms'] ?? false;
 
-      // Imprimir todos los valores antes de guardar para depurar
-      print('Datos a guardar: $_club');
-
-      // Enviar los datos validados a la base de datos
-      await databaseService.updateClub(_club!['id'], _club!);
+      // Use addOrUpdateClub to handle both creation and update
+      await databaseService.addOrUpdateClub(widget.email, _club!);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Data updated successfully')),
       );
     } catch (e) {
-      // Imprimir el error para depurar
       print('Error al guardar datos: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error saving data: $e')),
@@ -117,8 +101,8 @@ class _ClubScreenState extends State<ClubScreen> {
             TextFormField(
               initialValue: _club!['phone'].toString(),
               decoration: const InputDecoration(labelText: 'Teléfono'),
-              keyboardType: TextInputType.number,
-              onChanged: (value) => _club!['phone'] = int.tryParse(value) ?? 0,
+              keyboardType: TextInputType.phone,
+              onChanged: (value) => _club!['phone'] = value,
             ),
             const SizedBox(height: 10),
             TextFormField(

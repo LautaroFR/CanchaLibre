@@ -24,7 +24,7 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Court')),
+      appBar: AppBar(title: const Text('Add Court')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -32,19 +32,19 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
           child: Column(
             children: [
               TextFormField(
-                decoration: InputDecoration(labelText: 'Court Number'),
+                decoration: const InputDecoration(labelText: 'Court Number'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['number'] = int.tryParse(value!),
                 validator: (value) => value!.isEmpty ? 'Required field' : null,
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Size'),
+                decoration: const InputDecoration(labelText: 'Size'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['size'] = int.tryParse(value!),
                 validator: (value) => value!.isEmpty ? 'Required field' : null,
               ),
               DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Surface'),
+                decoration: const InputDecoration(labelText: 'Surface'),
                 value: _court['surface'],
                 items: ['Synthetic', 'Natural', 'Concrete', 'Parquet', 'Other']
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
@@ -54,26 +54,26 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
                 }),
               ),
               SwitchListTile(
-                title: Text('Light'),
+                title: const Text('Light'),
                 value: _court['light'],
                 onChanged: (value) => setState(() {
                   _court['light'] = value;
                 }),
               ),
               SwitchListTile(
-                title: Text('Covered'),
+                title: const Text('Covered'),
                 value: _court['covered'],
                 onChanged: (value) => setState(() {
                   _court['covered'] = value;
                 }),
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: 'Price'),
+                decoration: const InputDecoration(labelText: 'Price'),
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _court['price'] = int.tryParse(value!),
                 validator: (value) => value!.isEmpty ? 'Required field' : null,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -83,7 +83,7 @@ class _AddCourtScreenState extends State<AddCourtScreen> {
                     Navigator.pop(context);
                   }
                 },
-                child: Text('Add Court'),
+                child: const Text('Add Court'),
               ),
             ],
           ),

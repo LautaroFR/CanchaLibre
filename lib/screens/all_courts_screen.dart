@@ -19,7 +19,7 @@ class AllCourtsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('All Courts')),
+      appBar: AppBar(title: const Text('Listado de canchas')),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: fetchAllCourts(),
         builder: (context, snapshot) {
@@ -35,13 +35,13 @@ class AllCourtsScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final court = snapshot.data![index];
                 return ListTile(
-                  title: Text('Court Number: ${court['number']} (Club ID: ${court['clubId']})'),
-                  subtitle: Text('Size: ${court['size']} m²\nSurface: ${court['surface']}\nPrice: \$${court['price']}'),
+                  title: Text('Club ${court['clubId']}  - Cancha #${court['number']}'),
+                  subtitle: Text('Futbol ${court['size']} - ${court['surface']}\nPrecio: \$${court['price']}'),
                   trailing: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Light: ${court['light'] ? 'Yes' : 'No'}'),
-                      Text('Covered: ${court['covered'] ? 'Yes' : 'No'}'),
+                      Text(court['light'] ? 'Con iluminación' : 'Sin iluminación'),
+                      Text(court['covered'] ? 'Techada' : ' '),
                     ],
                   ),
                 );

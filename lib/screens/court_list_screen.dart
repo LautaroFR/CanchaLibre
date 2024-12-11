@@ -11,7 +11,11 @@ class CourtListScreen extends StatelessWidget {
     final databaseService = DatabaseService();
     try {
       final QuerySnapshot<Map<String, dynamic>> snapshot = await databaseService.getCourtsByClubId(clubId);
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['clubId'] = clubId;  // Asegurarse de que 'clubId' esté presente en los datos
+        return data;
+      }).toList();
     } catch (error) {
       print("Error fetching courts: $error");
       return [];
@@ -21,7 +25,7 @@ class CourtListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Court List')),
+      appBar: AppBar(title: const Text('Listado de canchas')),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: fetchCourts(),
         builder: (context, snapshot) {
@@ -37,13 +41,13 @@ class CourtListScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final court = snapshot.data![index];
                 return ListTile(
-                  title: Text('Court Number: ${court['number']}'),
-                  subtitle: Text('Size: ${court['size']} m²\nSurface: ${court['surface']}\nPrice: \$${court['price']}'),
+                  title: Text('Club ${court['clubId']} - Cancha #${court['number']}'),
+                  subtitle: Text('Futbol ${court['size']} - ${court['surface']}\nPrecio: \$${court['price']}'),
                   trailing: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('Light: ${court['light'] ? 'Yes' : 'No'}'),
-                      Text('Covered: ${court['covered'] ? 'Yes' : 'No'}'),
+                      Text(court['light'] ? 'Con iluminación' : 'Sin iluminación'),
+                      Text(court['covered'] ? 'Techada' : ' '),
                     ],
                   ),
                 );

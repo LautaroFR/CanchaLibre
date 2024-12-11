@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../services/database_service.dart';
 
 class EditClubScreen extends StatefulWidget {
-  const EditClubScreen({super.key});
+  final String email;
+
+  const EditClubScreen({super.key, required this.email});
 
   @override
   _EditClubScreenState createState() => _EditClubScreenState();
@@ -26,8 +28,9 @@ class _EditClubScreenState extends State<EditClubScreen> {
       'court_count': courtCount,
       'parking': parking,
       'changing_rooms': changingRooms,
+      'email': widget.email,
     };
-    await databaseService.addClub(club);
+    await databaseService.addOrUpdateClub(widget.email, club);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Information saved')),
     );
