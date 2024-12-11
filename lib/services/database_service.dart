@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class DatabaseService {
   final CollectionReference<Map<String, dynamic>> clubsCollection = FirebaseFirestore.instance.collection('clubs');
@@ -82,6 +83,37 @@ class DatabaseService {
       return allCourts;
     } catch (error) {
       print("Error getting all courts: $error");
+      rethrow;
+    }
+  }
+
+  // Update club schedule
+  Future<void> updateClubSchedule(String clubId, Map<String, Map<String, TimeOfDay>> schedule, BuildContext context) async {
+    try {
+      Map<String, Map<String, String>> scheduleToSave = schedule.map((key, value) => MapEntry(
+        key,
+        value.map((timeKey, timeValue) => MapEntry(timeKey, timeValue.format(context))),
+      ));
+
+      await clubsCollection.doc(clubId).update({
+        'schedule': scheduleToSave,
+      });
+    } catch (error) {
+      print("Error al actualizar horarios del club: $error");
+      rethrow;
+    }
+  }
+
+  // Get club schedule
+  Future<Map<String, dynamic>?> getClubSchedule(String clubId) async {
+    try {
+      final doc = await clubsCollection.doc(clubId).get();
+      if (doc.exists) {
+        return doc.data()!['schedule'] as Map<String, dynamic>;
+      }
+      return null;
+    } catch (error) {
+      print("Error al obtener horarios del club: $error");
       rethrow;
     }
   }
