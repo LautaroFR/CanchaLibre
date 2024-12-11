@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/database_service.dart';
 import 'court_list_screen.dart';
 import 'add_court_screen.dart';
+import '../widgets/address_autocomplete.dart';  // Importa el widget de autocompletado
 
 class ClubScreen extends StatefulWidget {
   final String email;
@@ -15,6 +16,7 @@ class ClubScreen extends StatefulWidget {
 class _ClubScreenState extends State<ClubScreen> {
   Map<String, dynamic>? _club;
   String? _errorMessage;
+  final TextEditingController _addressController = TextEditingController();
 
   Future<void> fetchClubData() async {
     final databaseService = DatabaseService();
@@ -25,6 +27,7 @@ class _ClubScreenState extends State<ClubScreen> {
         setState(() {
           _club = clubDoc.data() as Map<String, dynamic>;
           _club!['id'] = clubDoc.id;
+          _addressController.text = _club!['address'] ?? '';  // Inicializar el campo de dirección
         });
       } else {
         setState(() {
@@ -51,7 +54,7 @@ class _ClubScreenState extends State<ClubScreen> {
     final databaseService = DatabaseService();
     try {
       _club!['name'] = (_club!['name'] ?? '').toString().trim();
-      _club!['address'] = (_club!['address'] ?? '').toString().trim();
+      _club!['address'] = _addressController.text.trim();  // Obtener el valor del controlador
       _club!['phone'] = _club!['phone'].toString().trim();
       _club!['court_count'] = int.tryParse((_club!['court_count'] ?? '0').toString()) ?? 0;
       _club!['parking'] = _club!['parking'] ?? false;
@@ -92,10 +95,14 @@ class _ClubScreenState extends State<ClubScreen> {
               onChanged: (value) => _club!['name'] = value,
             ),
             const SizedBox(height: 10),
-            TextFormField(
-              initialValue: _club!['address'],
-              decoration: const InputDecoration(labelText: 'Dirección'),
-              onChanged: (value) => _club!['address'] = value,
+            AddressAutocomplete(
+              controller: _addressController,  // Pasa el controlador al widget
+              onSelected: (value) {
+                setState(() {
+                  _addressController.text = value;  // Actualizar el controlador con la dirección seleccionada
+                  _club!['address'] = value;
+                });
+              },
             ),
             const SizedBox(height: 10),
             TextFormField(
