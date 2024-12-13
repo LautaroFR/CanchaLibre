@@ -7,6 +7,7 @@ import 'add_court_screen.dart';
 import '../widgets/address_autocomplete.dart';
 import 'home_screen.dart';  // Importa la pantalla de inicio
 import 'schedule_screen.dart';  // Importa la pantalla de horarios
+import 'calendar_screen.dart';  // Importa la pantalla de calendario
 
 class ClubScreen extends StatefulWidget {
   final String email;
@@ -204,6 +205,18 @@ class _ClubScreenState extends State<ClubScreen> {
                 );
               },
               child: const Text('Configurar horarios'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CalendarScreen(clubId: _club!['id']),
+                  ),
+                );
+              },
+              child: const Text('Ver calendario'),
             ),
           ],
         ),
