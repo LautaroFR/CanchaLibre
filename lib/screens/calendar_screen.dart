@@ -110,6 +110,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat('EEEE dd \'de\' MMMM yyyy', 'es_ES').format(_selectedDate);
+    formattedDate = formattedDate.split(' ').map((word) {
+      if (word != 'de') {
+        return word[0].toUpperCase() + word.substring(1);
+      }
+      return word;
+    }).join(' ');
 
     return Scaffold(
       appBar: AppBar(
@@ -128,12 +134,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '$formattedDate',
-              style: const TextStyle(fontSize: 16),
+            Center(
+              child: Text(
+                formattedDate,
+                style: const TextStyle(fontSize: 16),
+              ),
             ),
             const SizedBox(height: 20),
-            Expanded(child: _buildScheduleTable()),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.vertical,
+                  child: _buildScheduleTable(),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -141,26 +157,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildScheduleTable() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        columns: [
-          DataColumn(label: Text('Horario')), // Columna de horarios
-          for (var court in _courts) DataColumn(label: Text('Cancha $court')), // Columnas para cada cancha
-        ],
-        rows: _times.map((time) {
-          return DataRow(cells: [
-            DataCell(Text(time)), // Fila para el horario
-            for (var court in _courts) DataCell(
-              Text('Disponible'),
-              onTap: () {
-                // Aquí puedes manejar la lógica al hacer clic en una celda
-                print('Clic en $time para Cancha $court');
-              },
-            ), // Celdas para cada cancha
-          ]);
-        }).toList(),
-      ),
+    return DataTable(
+      columns: [
+        DataColumn(label: Text('Horario')), // Columna de horarios
+        for (var court in _courts) DataColumn(label: Text('Cancha $court')), // Columnas para cada cancha
+      ],
+      rows: _times.map((time) {
+        return DataRow(cells: [
+          DataCell(Text(time)), // Fila para el horario
+          for (var court in _courts) DataCell(
+            Text('Disponible'),
+            onTap: () {
+              // Aquí puedes manejar la lógica al hacer clic en una celda
+              print('Clic en $time para Cancha $court');
+            },
+          ), // Celdas para cada cancha
+        ]);
+      }).toList(),
     );
   }
 }
