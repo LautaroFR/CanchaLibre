@@ -20,53 +20,64 @@ class _CalendarScreenState extends State<CalendarScreen> {
   final DatabaseService _databaseService = DatabaseService();
   bool _isLoading = true;
 
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
+  final ScrollController _fixedColumnScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _fetchDataFromDatabase();
+
+    // Sincronizar el scroll vertical
+    _verticalScrollController.addListener(() {
+      if (_fixedColumnScrollController.hasClients) {
+        _fixedColumnScrollController.jumpTo(_verticalScrollController.offset);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
+    _fixedColumnScrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchDataFromDatabase() async {
     try {
       final clubData = await _databaseService.getClubById(widget.clubId);
-      print("Datos del club: $clubData");
       if (clubData != null) {
         final schedule = clubData['schedule'] as Map<String, dynamic>;
-        String dayOfWeek = DateFormat('EEEE', 'es_ES').format(_selectedDate); // Obtener el día de la semana en español
-        dayOfWeek = dayOfWeek[0].toUpperCase() + dayOfWeek.substring(1).toLowerCase(); // Asegurar la primera letra en mayúsculas
-        print("Día de la semana: $dayOfWeek");
+        String dayOfWeek = DateFormat('EEEE', 'es_ES').format(_selectedDate);
+        dayOfWeek = dayOfWeek[0].toUpperCase() + dayOfWeek.substring(1).toLowerCase();
 
         if (schedule != null && schedule.containsKey(dayOfWeek)) {
           final daySchedule = schedule[dayOfWeek];
           _openingTime = _parseTimeString(daySchedule['open']);
           _closingTime = _parseTimeString(daySchedule['close']);
-          print("Hora de apertura: $_openingTime");
-          print("Hora de cierre: $_closingTime");
 
           final courtsSnapshot = await _databaseService.getCourtsByClubId(widget.clubId);
           setState(() {
             _courts = courtsSnapshot.docs.map((doc) => doc['number'] as int).toList();
             _times = _generateTimes(_openingTime!, _closingTime!);
             _isLoading = false;
-            print("Datos del club cargados correctamente: $_courts, $_openingTime, $_closingTime");
           });
         } else {
           setState(() {
             _isLoading = false;
           });
-          print("No se encontraron horarios del club para $dayOfWeek.");
         }
       } else {
         setState(() {
           _isLoading = false;
         });
-        print("No se encontraron datos del club.");
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
       });
-      print("Error al cargar los datos del club: $e");
     }
   }
 
@@ -85,7 +96,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     while (startDateTime.isBefore(endDateTime)) {
       times.add(DateFormat.Hm().format(startDateTime));
-      startDateTime = startDateTime.add(Duration(minutes: 30)); // Incremento de 30 minutos
+      startDateTime = startDateTime.add(const Duration(minutes: 30));
     }
     return times;
   }
@@ -102,7 +113,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       setState(() {
         _selectedDate = picked;
         _isLoading = true;
-        _fetchDataFromDatabase(); // Volver a cargar los datos cuando se selecciona una nueva fecha
+        _fetchDataFromDatabase();
       });
     }
   }
@@ -142,38 +153,103 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: _buildScheduleTable(),
-                ),
+              child: Column(
+                children: [
+                  // Primera fila con "Horarios" fija y cabeceras sincronizadas con el scroll horizontal
+                  Row(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 50,
+                        color: Colors.grey[300],
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Horarios',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      // Fila sincronizada al scroll horizontal
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          controller: _horizontalScrollController,
+                          child: Row(
+                            children: _courts.map((court) {
+                              return Container(
+                                width: 100,
+                                height: 50,
+                                color: Colors.grey[300],
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Cancha $court',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Contenido desplazable
+                  Expanded(
+                    child: Row(
+                      children: [
+                        // Columna fija (horarios)
+                        SingleChildScrollView(
+                          controller: _fixedColumnScrollController,
+                          scrollDirection: Axis.vertical,
+                          child: Column(
+                            children: _times.map((time) {
+                              return Container(
+                                width: 100,
+                                height: 50,
+                                color: Colors.grey[200],
+                                alignment: Alignment.center,
+                                child: Text(time),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                        // Tabla desplazable
+                        Expanded(
+                          child: SingleChildScrollView(
+                            controller: _verticalScrollController,
+                            scrollDirection: Axis.vertical,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              controller: _horizontalScrollController,
+                              child: Column(
+                                children: _times.map((time) {
+                                  return Row(
+                                    children: _courts.map((court) {
+                                      return Container(
+                                        width: 100,
+                                        height: 50,
+                                        alignment: Alignment.center,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            print('Clic en $time para Cancha $court');
+                                          },
+                                          child: const Text('Disponible'),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildScheduleTable() {
-    return DataTable(
-      columns: [
-        DataColumn(label: Text('Horario')), // Columna de horarios
-        for (var court in _courts) DataColumn(label: Text('Cancha $court')), // Columnas para cada cancha
-      ],
-      rows: _times.map((time) {
-        return DataRow(cells: [
-          DataCell(Text(time)), // Fila para el horario
-          for (var court in _courts) DataCell(
-            Text('Disponible'),
-            onTap: () {
-              // Aquí puedes manejar la lógica al hacer clic en una celda
-              print('Clic en $time para Cancha $court');
-            },
-          ), // Celdas para cada cancha
-        ]);
-      }).toList(),
     );
   }
 }
