@@ -31,6 +31,20 @@ class DatabaseService {
     }
   }
 
+  // Get club by ID
+  Future<Map<String, dynamic>?> getClubById(String clubId) async {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> doc = await clubsCollection.doc(clubId).get();
+      if (doc.exists) {
+        return doc.data();
+      }
+      return null;
+    } catch (error) {
+      print("Error getting club by ID: $error");
+      rethrow;
+    }
+  }
+
   // Delete court
   Future<void> deleteCourt(String clubId, String courtId) async {
     try {
@@ -88,18 +102,13 @@ class DatabaseService {
   }
 
   // Update club schedule
-  Future<void> updateClubSchedule(String clubId, Map<String, Map<String, TimeOfDay>> schedule, BuildContext context) async {
+  Future<void> updateClubSchedule(String clubId, Map<String, Map<String, String>> schedule) async {
     try {
-      Map<String, Map<String, String>> scheduleToSave = schedule.map((key, value) => MapEntry(
-        key,
-        value.map((timeKey, timeValue) => MapEntry(timeKey, timeValue.format(context))),
-      ));
-
       await clubsCollection.doc(clubId).update({
-        'schedule': scheduleToSave,
+        'schedule': schedule,
       });
     } catch (error) {
-      print("Error al actualizar horarios del club: $error");
+      print("Error updating club schedule: $error");
       rethrow;
     }
   }
@@ -108,12 +117,12 @@ class DatabaseService {
   Future<Map<String, dynamic>?> getClubSchedule(String clubId) async {
     try {
       final doc = await clubsCollection.doc(clubId).get();
-      if (doc.exists) {
+      if (doc.exists && doc.data()!.containsKey('schedule')) {
         return doc.data()!['schedule'] as Map<String, dynamic>;
       }
       return null;
     } catch (error) {
-      print("Error al obtener horarios del club: $error");
+      print("Error getting club schedule: $error");
       rethrow;
     }
   }
