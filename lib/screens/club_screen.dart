@@ -55,9 +55,15 @@ class _ClubScreenState extends State<ClubScreen> {
     }
   }
 
-  Future<void> saveChanges() async {
+  Future<void> saveChanges(String password) async {
     final databaseService = DatabaseService();
+    final user = FirebaseAuth.instance.currentUser;
+
     try {
+      // Re-autenticar al usuario
+      final credential = EmailAuthProvider.credential(email: user!.email!, password: password);
+      await user.reauthenticateWithCredential(credential);
+
       _club!['name'] = (_club!['name'] ?? '').toString().trim();
       _club!['address'] = _addressController.text.trim(); // Obtener el valor del controlador
       _club!['phone'] = _club!['phone'].toString().trim();
@@ -77,6 +83,68 @@ class _ClubScreenState extends State<ClubScreen> {
         SnackBar(content: Text('Error al guardar datos: $e')),
       );
     }
+  }
+
+  Future<void> _showPasswordDialog() async {
+    final TextEditingController passwordController = TextEditingController();
+    String? errorMessage;
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // El usuario debe ingresar la contraseña
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Confirmar Contraseña'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    const Text('Por favor ingrese su contraseña para confirmar la edición de cambios.'),
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(labelText: 'Contraseña'),
+                    ),
+                    if (errorMessage != null)
+                      Text(
+                        errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancelar'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: const Text('Confirmar'),
+                  onPressed: () async {
+                    final password = passwordController.text;
+                    final user = FirebaseAuth.instance.currentUser;
+
+                    try {
+                      final credential = EmailAuthProvider.credential(email: user!.email!, password: password);
+                      await user.reauthenticateWithCredential(credential);
+                      Navigator.of(context).pop(); // Cerrar el cuadro de diálogo si la re-autenticación es exitosa
+                      saveChanges(password); // Guardar los cambios
+                    } catch (e) {
+                      setState(() {
+                        errorMessage = 'Contraseña incorrecta';
+                      });
+                    }
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _logout() async {
@@ -178,7 +246,7 @@ class _ClubScreenState extends State<ClubScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: saveChanges,
+              onPressed: _showPasswordDialog,
               child: const Text('Guardar cambios'),
             ),
             const Divider(height: 40),
