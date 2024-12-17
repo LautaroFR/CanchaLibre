@@ -90,7 +90,10 @@ class _SearchClubScreenState extends State<SearchClubScreen> {
                 itemBuilder: (context, index) {
                   final club = _clubSuggestions[index];
                   return ListTile(
-                    title: Text(club['name']),
+                    title: Text(
+                      '${club['name']} - ${club['address'] ?? 'Sin dirección'}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
                     onTap: () {
                       _fetchClubData(club['id']);
                     },
@@ -142,12 +145,12 @@ class _SearchClubScreenState extends State<SearchClubScreen> {
                 textAlign: TextAlign.center),
             const SizedBox(height: 10),
             Text(
-                '${_selectedClub!['parking'] ? "Estacionamiento" : "Sin estacionamiento"}',
+                '${_selectedClub!['parking'] ? "Estacionamiento" : ""}',
                 style: const TextStyle(fontSize: 16),
                 textAlign: TextAlign.center),
             const SizedBox(height: 10),
             Text(
-                '${_selectedClub!['changing_rooms'] ? "Vestuarios" : "Sin vestuarios"}',
+                '${_selectedClub!['changing_rooms'] ? "Vestuarios" : ""}',
                 style: const TextStyle(fontSize: 16),
                 textAlign: TextAlign.center),
             const SizedBox(height: 20),

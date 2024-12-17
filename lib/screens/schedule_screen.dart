@@ -106,8 +106,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Configurar Horarios')),
-      body: _loading
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(widget.isGuest ? 'Horarios' : 'Configurar Horarios'),
+      ),      body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
         padding: const EdgeInsets.all(16.0),
