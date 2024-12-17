@@ -5,9 +5,9 @@ import '../services/database_service.dart';
 import 'court_list_screen.dart';
 import 'add_court_screen.dart';
 import '../widgets/address_autocomplete.dart';
-import 'home_screen.dart';  // Importa la pantalla de inicio
-import 'schedule_screen.dart';  // Importa la pantalla de horarios
-import 'calendar_screen.dart';  // Importa la pantalla de calendario
+import 'home_screen.dart'; // Importa la pantalla de inicio
+import 'schedule_screen.dart'; // Importa la pantalla de horarios
+import 'calendar_screen.dart'; // Importa la pantalla de calendario
 
 class ClubScreen extends StatefulWidget {
   final String email;
@@ -32,7 +32,7 @@ class _ClubScreenState extends State<ClubScreen> {
         setState(() {
           _club = clubDoc.data() as Map<String, dynamic>;
           _club!['id'] = clubDoc.id;
-          _addressController.text = _club!['address'] ?? '';  // Inicializar el campo de dirección
+          _addressController.text = _club!['address'] ?? ''; // Inicializar el campo de dirección
         });
       } else {
         setState(() {
@@ -45,7 +45,7 @@ class _ClubScreenState extends State<ClubScreen> {
             'changing_rooms': false,
             'email': widget.email,
           };
-          _club!['id'] = widget.email.split('@')[0];  // Crear el 'id' basado en el email
+          _club!['id'] = widget.email.split('@')[0]; // Crear el 'id' basado en el email
         });
       }
     } catch (e) {
@@ -59,7 +59,7 @@ class _ClubScreenState extends State<ClubScreen> {
     final databaseService = DatabaseService();
     try {
       _club!['name'] = (_club!['name'] ?? '').toString().trim();
-      _club!['address'] = _addressController.text.trim();  // Obtener el valor del controlador
+      _club!['address'] = _addressController.text.trim(); // Obtener el valor del controlador
       _club!['phone'] = _club!['phone'].toString().trim();
       _club!['court_count'] = int.tryParse((_club!['court_count'] ?? '0').toString()) ?? 0;
       _club!['parking'] = _club!['parking'] ?? false;
@@ -81,8 +81,8 @@ class _ClubScreenState extends State<ClubScreen> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('keepLoggedIn', false);  // Actualizar el estado de mantener sesión iniciada
-    await FirebaseAuth.instance.signOut();  // Cerrar sesión en Firebase
+    await prefs.setBool('keepLoggedIn', false); // Actualizar el estado de mantener sesión iniciada
+    await FirebaseAuth.instance.signOut(); // Cerrar sesión en Firebase
 
     // Redirigir a HomeScreen
     Navigator.pushAndRemoveUntil(
@@ -125,17 +125,28 @@ class _ClubScreenState extends State<ClubScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextFormField(
-              initialValue: _club!['name'],
-              decoration: const InputDecoration(labelText: 'Club'),
-              onChanged: (value) => _club!['name'] = value,
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    initialValue: _club!['name'],
+                    decoration: const InputDecoration(labelText: 'Club'),
+                    onChanged: (value) => _club!['name'] = value,
+                  ),
+                ),
+                if (_club!['verified'] == true)
+                  const Icon(
+                    Icons.check_circle,
+                    color: Colors.blue,
+                  ),
+              ],
             ),
             const SizedBox(height: 10),
             AddressAutocomplete(
-              controller: _addressController,  // Pasa el controlador al widget
+              controller: _addressController, // Pasa el controlador al widget
               onSelected: (value) {
                 setState(() {
-                  _addressController.text = value;  // Actualizar el controlador con la dirección seleccionada
+                  _addressController.text = value; // Actualizar el controlador con la dirección seleccionada
                   _club!['address'] = value;
                 });
               },
