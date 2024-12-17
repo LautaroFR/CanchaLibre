@@ -3,7 +3,9 @@ import '../services/database_service.dart';
 
 class ScheduleScreen extends StatefulWidget {
   final String clubId;
-  const ScheduleScreen({super.key, required this.clubId});
+  final bool isGuest; // Nueva variable para controlar si es invitado
+
+  const ScheduleScreen({super.key, required this.clubId, this.isGuest = false});
 
   @override
   _ScheduleScreenState createState() => _ScheduleScreenState();
@@ -23,12 +25,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   final DatabaseService _databaseService = DatabaseService();
   bool _loading = true;
 
-  // Helper para convertir TimeOfDay a cadena de texto en formato 24 horas
   String _formatTimeOfDay(TimeOfDay time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 
-  // Helper para convertir cadena de texto en formato 24 horas a TimeOfDay
   TimeOfDay? _parseTimeString(String? time) {
     if (time == null || time.isEmpty) return null;
     try {
@@ -51,54 +51,36 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Future<void> _loadSchedule() async {
     try {
       final schedule = await _databaseService.getClubSchedule(widget.clubId);
-      print("Datos obtenidos de Firebase: $schedule");
-
       if (schedule != null) {
         setState(() {
           _schedule.clear();
-
           for (String day in _daysOrder) {
             if (schedule[day] != null) {
-              print("Procesando $day: ${schedule[day]}");
               _schedule[day] = {
                 'open': schedule[day]['open'] ?? '08:00',
                 'close': schedule[day]['close'] ?? '20:00',
               };
             } else {
-              print("$day no tiene datos en Firebase.");
-              _schedule[day] = {
-                'open': '08:00',
-                'close': '20:00',
-              };
+              _schedule[day] = {'open': '08:00', 'close': '20:00'};
             }
           }
           _loading = false;
         });
       } else {
-        print("No se encontró el horario en Firebase. Creando horarios por defecto...");
         _createDefaultSchedule();
-        _saveSchedule(); // Guardar los horarios por defecto en Firebase
+        if (!widget.isGuest) _saveSchedule(); // Solo guarda si no es invitado
       }
     } catch (e) {
       print("Error al cargar los horarios: $e");
-      setState(() {
-        _loading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar los horarios: $e')),
-      );
+      setState(() => _loading = false);
     }
   }
 
   void _createDefaultSchedule() {
     setState(() {
       _schedule.clear();
-
       for (String day in _daysOrder) {
-        _schedule[day] = {
-          'open': '08:00',
-          'close': '20:00',
-        };
+        _schedule[day] = {'open': '08:00', 'close': '20:00'};
       }
       _loading = false;
     });
@@ -118,10 +100,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   Future<TimeOfDay?> _selectTime(BuildContext context, TimeOfDay initialTime) async {
-    return showTimePicker(
-      context: context,
-      initialTime: initialTime,
-    );
+    return showTimePicker(context: context, initialTime: initialTime);
   }
 
   @override
@@ -133,44 +112,61 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           : ListView(
         padding: const EdgeInsets.all(16.0),
         children: _daysOrder.map((day) {
-          final daySchedule = _schedule[day] ?? {
-            'open': '08:00',
-            'close': '20:00',
-          };
-
+          final daySchedule = _schedule[day] ?? {'open': '08:00', 'close': '20:00'};
           return Column(
             children: [
-              Text(day, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(day,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  // Botones de edición condicionados
                   TextButton(
-                    onPressed: () async {
-                      final openTime = _parseTimeString(daySchedule['open']);
+                    onPressed: widget.isGuest
+                        ? null
+                        : () async {
+                      final openTime =
+                      _parseTimeString(daySchedule['open']);
                       if (openTime != null) {
-                        TimeOfDay? selectedTime = await _selectTime(context, openTime);
+                        TimeOfDay? selectedTime =
+                        await _selectTime(context, openTime);
                         if (selectedTime != null) {
                           setState(() {
-                            _schedule[day]!['open'] = _formatTimeOfDay(selectedTime);
+                            _schedule[day]!['open'] =
+                                _formatTimeOfDay(selectedTime);
                           });
                         }
                       }
                     },
-                    child: Text('Apertura: ${daySchedule['open']}'),
+                    child: Text('Apertura: ${daySchedule['open']}',
+                        style: TextStyle(
+                            color: widget.isGuest
+                                ? Colors.black
+                                : Colors.blue)),
                   ),
                   TextButton(
-                    onPressed: () async {
-                      final closeTime = _parseTimeString(daySchedule['close']);
+                    onPressed: widget.isGuest
+                        ? null
+                        : () async {
+                      final closeTime =
+                      _parseTimeString(daySchedule['close']);
                       if (closeTime != null) {
-                        TimeOfDay? selectedTime = await _selectTime(context, closeTime);
+                        TimeOfDay? selectedTime =
+                        await _selectTime(context, closeTime);
                         if (selectedTime != null) {
                           setState(() {
-                            _schedule[day]!['close'] = _formatTimeOfDay(selectedTime);
+                            _schedule[day]!['close'] =
+                                _formatTimeOfDay(selectedTime);
                           });
                         }
                       }
                     },
-                    child: Text('Cierre: ${daySchedule['close']}'),
+                    child: Text('Cierre: ${daySchedule['close']}',
+                        style: TextStyle(
+                            color: widget.isGuest
+                                ? Colors.black
+                                : Colors.blue)),
                   ),
                 ],
               ),
@@ -179,7 +175,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           );
         }).toList(),
       ),
-      floatingActionButton: FloatingActionButton(
+      // Botón guardar: solo visible si no es invitado
+      floatingActionButton: widget.isGuest
+          ? null
+          : FloatingActionButton(
         onPressed: _saveSchedule,
         child: const Icon(Icons.save),
       ),
