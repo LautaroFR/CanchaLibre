@@ -291,7 +291,7 @@ class _ClubScreenState extends State<ClubScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CalendarScreen(clubId: _club!['id']),
+                    builder: (context) => CalendarScreen(clubId: _club!['id'], isGuest: false,),
                   ),
                 );
               },

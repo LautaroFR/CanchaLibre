@@ -4,8 +4,13 @@ import '../services/database_service.dart';
 
 class CalendarScreen extends StatefulWidget {
   final String clubId;
+  final bool isGuest; // Nuevo parámetro para indicar si es invitado
 
-  const CalendarScreen({super.key, required this.clubId});
+  const CalendarScreen({
+    Key? key,
+    required this.clubId,
+    required this.isGuest,
+  }) : super(key: key);
 
   @override
   _CalendarScreenState createState() => _CalendarScreenState();
@@ -19,6 +24,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   TimeOfDay? _closingTime;
   final DatabaseService _databaseService = DatabaseService();
   bool _isLoading = true;
+  Map<String, dynamic>? _clubData;
 
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _horizontalScrollController = ScrollController();
@@ -49,6 +55,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     try {
       final clubData = await _databaseService.getClubById(widget.clubId);
       if (clubData != null) {
+        _clubData = clubData;
         final schedule = clubData['schedule'] as Map<String, dynamic>;
         String dayOfWeek = DateFormat('EEEE', 'es_ES').format(_selectedDate);
         dayOfWeek = dayOfWeek[0].toUpperCase() + dayOfWeek.substring(1).toLowerCase();
@@ -118,6 +125,107 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
   }
 
+  void _handleReservation(String time, int court) {
+    if (widget.isGuest) {
+      _showGuestReservationDialog(time, court);
+    } else {
+      _showUserReservationDialog(time, court);
+    }
+  }
+
+  void _showGuestReservationDialog(String time, int court) {
+    final DateFormat dateFormat = DateFormat('EEEE dd \'de\' MMMM yyyy', 'es_ES');
+    String date = dateFormat.format(_selectedDate); List<String> dateParts = date.split(' ');
+    dateParts[3] = dateParts[3][0].toUpperCase() + dateParts[3].substring(1);
+    showDialog(
+      context: context,
+      builder: (context) {
+        TextEditingController nameController = TextEditingController();
+        return AlertDialog(
+          title: const Text("Reservar como invitado"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Día: $date\nHorario: $time\nCancha: $court"),
+              const SizedBox(height: 20),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "Tu nombre"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                final name = nameController.text.trim();
+                if (name.isNotEmpty) {
+                  print("Hola, soy $name y deseo reservar la cancha $court el día $date a las $time.");
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Enviar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showUserReservationDialog(String time, int court) {
+    final DateFormat dateFormat = DateFormat('EEEE dd \'de\' MMMM yyyy', 'es_ES');
+    String date = dateFormat.format(_selectedDate); List<String> dateParts = date.split(' ');
+    dateParts[3] = dateParts[3][0].toUpperCase() + dateParts[3].substring(1); // Capitaliza la primera letra del mes date = dateParts.join(' ');
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        TextEditingController nameController = TextEditingController();
+        TextEditingController depositController = TextEditingController();
+        return AlertDialog(
+          title: const Text("Reservar cancha"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Día: $date\nHorario: $time\nCancha: $court"),
+              const SizedBox(height: 20),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "Nombre"),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: depositController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: "Seña a cuenta (opcional)"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            TextButton(
+              onPressed: () {
+                final name = nameController.text.trim();
+                final deposit = int.tryParse(depositController.text.trim()) ?? 0;
+                if (name.isNotEmpty) {
+                  print("Reserva confirmada para $date a las $time en la cancha $court. Nombre: $name. Seña: $deposit.");
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Reservar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     String formattedDate = DateFormat('EEEE dd \'de\' MMMM yyyy', 'es_ES').format(_selectedDate);
@@ -155,7 +263,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
             Expanded(
               child: Column(
                 children: [
-                  // Primera fila con "Horarios" fija y cabeceras sincronizadas con el scroll horizontal
                   Row(
                     children: [
                       Container(
@@ -168,7 +275,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
-                      // Fila sincronizada al scroll horizontal
                       Expanded(
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
@@ -191,11 +297,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ),
                     ],
                   ),
-                  // Contenido desplazable
                   Expanded(
                     child: Row(
                       children: [
-                        // Columna fija (horarios)
                         SingleChildScrollView(
                           controller: _fixedColumnScrollController,
                           scrollDirection: Axis.vertical,
@@ -211,7 +315,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             }).toList(),
                           ),
                         ),
-                        // Tabla desplazable
                         Expanded(
                           child: SingleChildScrollView(
                             controller: _verticalScrollController,
@@ -223,14 +326,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 children: _times.map((time) {
                                   return Row(
                                     children: _courts.map((court) {
-                                      return Container(
-                                        width: 100,
-                                        height: 50,
-                                        alignment: Alignment.center,
-                                        child: GestureDetector(
-                                          onTap: () {
-                                            print('Clic en $time para Cancha $court');
-                                          },
+                                      return GestureDetector(
+                                        onTap: () => _handleReservation(time, court),
+                                        child: Container(
+                                          width: 100,
+                                          height: 50,
+                                          margin: const EdgeInsets.all(1),
+                                          color: Colors.green[100],
+                                          alignment: Alignment.center,
                                           child: const Text('Disponible'),
                                         ),
                                       );

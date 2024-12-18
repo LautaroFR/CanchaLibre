@@ -173,7 +173,7 @@ class _SearchClubScreenState extends State<SearchClubScreen> {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        CalendarScreen(clubId: _selectedClub!['id']),
+                        CalendarScreen(clubId: _selectedClub!['id'], isGuest: true,),
                   ),
                 );
               },
