@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart'; // Importa url_launcher
 import '../services/database_service.dart';
 
 class CalendarScreen extends StatefulWidget {
   final String clubId;
-  final bool isGuest; // Nuevo parámetro para indicar si es invitado
+  final bool isGuest;
 
   const CalendarScreen({
     Key? key,
@@ -135,18 +136,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void _showGuestReservationDialog(String time, int court) {
     final DateFormat dateFormat = DateFormat('EEEE dd \'de\' MMMM yyyy', 'es_ES');
-    String date = dateFormat.format(_selectedDate); List<String> dateParts = date.split(' ');
+    String date = dateFormat.format(_selectedDate);
+    List<String> dateParts = date.split(' ');
     dateParts[3] = dateParts[3][0].toUpperCase() + dateParts[3].substring(1);
+
     showDialog(
       context: context,
       builder: (context) {
         TextEditingController nameController = TextEditingController();
         return AlertDialog(
-          title: const Text("Reservar como invitado"),
+          title: const Text("Solicitud de reserva"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text("Día: $date\nHorario: $time\nCancha: $court"),
+              Text("$date\nHorario: $time\nCancha $court"),
               const SizedBox(height: 20),
               TextField(
                 controller: nameController,
@@ -160,16 +163,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
               child: const Text("Cancelar"),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 final name = nameController.text.trim();
                 if (name.isNotEmpty) {
-                  print("Hola, soy $name y deseo reservar la cancha $court el día $date a las $time.");
+                  String message =
+                      "Hola, soy $name y deseo reservar la cancha $court el día $date a las $time.";
+                  Uri whatsappUri = Uri.parse(
+                      "https://wa.me/5491130332788?text=${Uri.encodeComponent(message)}");
+
+                  if (await canLaunchUrl(whatsappUri)) {
+                    await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("No se pudo abrir WhatsApp")),
+                    );
+                  }
                   Navigator.pop(context);
                 }
               },
               child: const Text("Enviar"),
             ),
-          ],
+        ],
         );
       },
     );
@@ -177,8 +191,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void _showUserReservationDialog(String time, int court) {
     final DateFormat dateFormat = DateFormat('EEEE dd \'de\' MMMM yyyy', 'es_ES');
-    String date = dateFormat.format(_selectedDate); List<String> dateParts = date.split(' ');
-    dateParts[3] = dateParts[3][0].toUpperCase() + dateParts[3].substring(1); // Capitaliza la primera letra del mes date = dateParts.join(' ');
+    String date = dateFormat.format(_selectedDate);
+    List<String> dateParts = date.split(' ');
+    dateParts[3] = dateParts[3][0].toUpperCase() + dateParts[3].substring(1);
 
     showDialog(
       context: context,
